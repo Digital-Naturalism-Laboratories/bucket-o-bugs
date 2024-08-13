@@ -4,7 +4,7 @@ Sort through wild bugs (insects) localized from a specific location in the world
 Done as part of the BeetlePalooza 2024 workshop.
 
 ## Development
-The following has been tested on the Ohio Supercomputer Center (OSC) with the following.
+The project has been tested on the Ohio Supercomputer Center (OSC) with the following.
 
 ```bash
 module load miniconda3/24.1.2-py310
