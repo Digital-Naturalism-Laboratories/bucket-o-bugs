@@ -1,4 +1,4 @@
-name: bob_2
+name: bob
 channels:
   - conda-forge
   - defaults
