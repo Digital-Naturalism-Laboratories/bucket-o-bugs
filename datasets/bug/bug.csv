@@ -1,0 +1,11 @@
+label,split,image_path
+beetle,train,train/1_Beetle/1.jpg
+beetle,train,train/1_Beetle/2.jpg
+beetle,train,train/1_Beetle/3.jpg
+beetle,train,train/1_Beetle/4.jpg
+beetle,train,train/1_Beetle/5.jpg
+not beetle,train,train/2_Not_Beetle/1.jpg
+not beetle,train,train/2_Not_Beetle/2.jpg
+not beetle,train,train/2_Not_Beetle/3.jpg
+not beetle,train,train/2_Not_Beetle/4.jpg
+not beetle,train,train/2_Not_Beetle/5.jpg
