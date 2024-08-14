@@ -25,25 +25,26 @@ def parse_args():
   parser.add_argument("--data-path", required = True, help = "path to images for classification (ex: datasets/test_images/data)")
   parser.add_argument("--rank", default = "order", help = "rank to which to classify; must be column in --taxa-csv (default: order)")
   parser.add_argument("--flag-holes", default = True, action = argparse.BooleanOptionalAction, help = "whether to filter holes and smudges (default: --flag-holes)")
-  parser.add_argument("--taxa-cols", default = TAXA_COLS, help = f"taxonomic columns in taxa CSV to load (default: {TAXA_COLS})")
   parser.add_argument("--taxa-csv", default = "taxa.csv", help = "CSV with taxonomic labels to use for CustomClassifier (default: taxa.csv)")
+  parser.add_argument("--taxa-cols", default = TAXA_COLS, help = f"taxonomic columns in taxa CSV to load (default: {TAXA_COLS})")
   
   return parser.parse_args()
 
 
-def load_taxon_keys(file_path, taxa_cols, taxon_rank = "order", flag_holes = True):
+def load_taxon_keys(taxa_path, taxa_cols, taxon_rank = "order", flag_holes = True):
   '''
   Loads taxon keys from a tab-delimited CSV file into a list.
 
   Args:
-    file_path: String. Path to the taxa CSV file.
+    taxa_path: String. Path to the taxa CSV file.
+    taxa_cols: List of strings. Taxonomic columns in taxa CSV to load (default: ["kingdom", "phylum", "class", "order", "family", "genus", "species"]).
     taxon_rank: String. Taxonomic rank to which to classify images (must be present as column in the taxa csv at file_path). Default: "order".
-    filter_holes: Boolean. Whether to filter holes and smudges (adds "hole" and "circle" to taxon_keys). Default: True.
+    flag_holes: Boolean. Whether to flag holes and smudges (adds "hole" and "circle" to taxon_keys). Default: True.
 
   Returns:
     taxon_keys: List. A list of taxon keys to feed to the CustomClassifier for bioCLIP classification.
   '''
-  df = pl.read_csv(file_path, low_memory = False).select(taxa_cols).filter(pl.col(taxon_rank).is_not_null())
+  df = pl.read_csv(taxa_path, low_memory = False).select(taxa_cols).filter(pl.col(taxon_rank).is_not_null())
   taxon_keys = pl.Series(df.select(pl.col(taxon_rank)).unique()).to_list()
   
   if flag_holes:
@@ -53,27 +54,27 @@ def load_taxon_keys(file_path, taxa_cols, taxon_rank = "order", flag_holes = Tru
   return taxon_keys
 
 
-def process_files_in_directory(input_path, classifier, taxon_rank = "order"):
+def process_files_in_directory(data_path, classifier, taxon_rank = "order"):
     '''
     Processes files within a specified subdirectory.
 
     Args:
-    input_path: String. The path to the directory containing files.
+    data_path: String. The path to the directory containing files.
     classifier: CustomLabelsClassifier object from TAXA_KEYS_CSV.
     taxon_rank: String. Taxonomic rank to which to classify images (must be present as column in the taxa csv at file_path). Default: "order".
     '''
 
     # Example: Print all file names in the subdirectory
-    for file in os.listdir(input_path):
-        file_path = os.path.join(input_path, file)
+    for file in os.listdir(data_path):
+        file_path = os.path.join(data_path, file)
         if os.path.isfile(file_path):
             print(f"File: {file_path}")
 
-    img_list = [f for f in os.listdir(input_path) if f.endswith(".jpg")]
+    img_list = [f for f in os.listdir(data_path) if f.endswith(".jpg")]
     
     if not img_list:
         # No imgs were found in base level
-        sys.exit("No .jpg images found in the input path: " + input_path)
+        sys.exit("No .jpg images found in the data path: " + data_path)
     else:
         predictions = {}
         # Analyze the files
@@ -82,7 +83,7 @@ def process_files_in_directory(input_path, classifier, taxon_rank = "order"):
         for file in img_list:
             filename = os.path.splitext(file)[0]
             #print(filename)
-            data = os.path.join(input_path, file)
+            data = os.path.join(data_path, file)
             print(f"\n img # {str(i)} out of {str(len(img_list))}")
             i=i+1
             
@@ -131,18 +132,35 @@ def create_json(predictions, json_path):
     json.dump(data, f, indent=2)
 
 
-if __name__ == "__main__":
-  args = parse_args()
-  json_path = f"{args.data_path.split(sep = '/data')[0]}/samples.json"
-  taxon_keys_list = load_taxon_keys(file_path = args.taxa_csv, taxa_cols = args.taxa_cols, taxon_rank = args.rank, flag_holes = args.flag_holes)
+def get_labels(data_path, taxon_rank = "order", flag_holes = True, taxa_path = "taxa.csv", taxa_cols = TAXA_COLS):
+  '''
+  Generates the list of taxa to predict, loads the CustomLabelsClassifier with that list, then gets the predictions and generates a JSON for V51 interface.
+  
+  Args:
+    data_path: String. The path to the directory containing files.
+    taxon_rank: String. Taxonomic rank to which to classify images (must be present as column in the taxa csv at file_path). Default: "order".
+    flag_holes: Boolean. Whether to flag holes and smudges (adds "hole" and "circle" to taxon_keys). Default: True.
+    taxa_path: String. Path to the taxa CSV file.
+    taxa_cols: List of strings. Taxonomic columns in taxa CSV to load (default: ["kingdom", "phylum", "class", "order", "family", "genus", "species"]).
+  '''
+  json_path = f"{data_path.split(sep = '/data')[0]}/samples.json"
+  taxon_keys_list = load_taxon_keys(taxa_path = taxa_path, taxa_cols = taxa_cols, taxon_rank = taxon_rank, flag_holes = flag_holes)
   print(f"We are predicting from the following {len(taxon_keys_list)} taxon keys: {taxon_keys_list}")
 
   print("Loading CustomLabelsClassifier...")
   classifier = CustomLabelsClassifier(taxon_keys_list)
-  predictions = process_files_in_directory(args.data_path, classifier)
+  predictions = process_files_in_directory(data_path, classifier)
   
   create_json(predictions, json_path)
 
+
+if __name__ == "__main__":
+  args = parse_args()
+  get_labels(data_path = args.data_path,
+             taxon_rank = args.rank,
+             flag_holes = args.flag_holes,
+             taxa_path = args.taxa_csv,
+             taxa_cols = args.taxa_cols)
 
 '''
 classifier = CustomLabelsClassifier(["insect", "hole"])
