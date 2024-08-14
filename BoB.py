@@ -12,12 +12,15 @@ Feed the folder to bioclip of images
 from bioclip import CustomLabelsClassifier
 import polars as pl
 import os
+import json
+import uuid
 
 # MVP for testing uses these images, will require re-write to pass options
 INPUT_PATH = "test_images"
 TAXA_COLS = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 TAXA_KEYS_CSV = "taxa.csv"
-
+image_list=[]
+tags=[]
 
 def load_taxon_keys(file_path, taxon_rank = "order", filter_holes = True):
   '''
@@ -98,6 +101,39 @@ def process_files_in_directory(subdirectory_path, classifier):
             # Print the winner
             print(filename+f"  This is the winner: {winner['classification']} with a score of {winner['score']}")
 
+def create_json(image_list, tags):
+  """
+  Creates a JSON file with the specified structure, containing image filepaths and tags.
+
+  Args:
+    image_list: A list of image filepaths.
+    tags: A list of tags corresponding to each image.
+
+  Returns:
+    None
+  """
+
+  if len(image_list) != len(tags):
+    raise ValueError("Image list and tags must have the same length")
+  samples = []
+  #dataset_id = str(uuid.uuid4()) #test and see if it accepts a UUID later! 
+  i=0
+  for filepath, tag in zip(image_list, tags):
+    i=i+1
+    sample = {
+      "_id": i,
+      "filepath": filepath,
+      "tags": [tag],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    }
+    samples.append(sample)
+
+  data = {"samples": samples}
+
+  with open("samples.json", "w") as f:
+    json.dump(data, f, indent=2)
+
 
 if __name__ == "__main__":
   taxon_keys_list = load_taxon_keys(TAXA_KEYS_CSV)
@@ -105,6 +141,8 @@ if __name__ == "__main__":
 
   classifier = CustomLabelsClassifier(taxon_keys_list)
   process_files_in_directory(INPUT_PATH, classifier)
+  create_json(image_list, tags)
+
 
 '''
 classifier = CustomLabelsClassifier(["insect", "hole"])
