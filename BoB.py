@@ -24,7 +24,7 @@ def parse_args():
   parser = argparse.ArgumentParser()
   parser.add_argument("--data-path", required = True, help = "path to images for classification (ex: datasets/test_images/data)")
   parser.add_argument("--rank", default = "order", help = "rank to which to classify; must be column in --taxa-csv (default: order)")
-  parser.add_argument("--flag-holes", default = True, action = argparse.BooleanOptionalAction, help = "whether to filter holes and smudges (default: --flag-holes)")
+  parser.add_argument("--flag-holes", default = True, action = argparse.BooleanOptionalAction, help = "whether to flag holes and smudges (default: --flag-holes)")
   parser.add_argument("--taxa-csv", default = "taxa.csv", help = "CSV with taxonomic labels to use for CustomClassifier (default: taxa.csv)")
   parser.add_argument("--taxa-cols", default = TAXA_COLS, help = f"taxonomic columns in taxa CSV to load (default: {TAXA_COLS})")
   
