@@ -14,16 +14,24 @@ import polars as pl
 import os
 import sys
 import json
+import argparse
 #import uuid
 
-# MVP for testing uses these images, will require re-write to pass options
-DATA_PATH = "datasets/test_images/data"
-JSON_PATH = f"{DATA_PATH.split(sep = '/data')[0]}/samples.json"
 TAXA_COLS = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
-TAXA_KEYS_CSV = "taxa.csv"
 
 
-def load_taxon_keys(file_path, taxon_rank = "order", filter_holes = True):
+def parse_args():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--data-path", required = True, help = "path to images for classification (ex: datasets/test_images/data)")
+  parser.add_argument("--rank", default = "order", help = "rank to which to classify; must be column in --taxa-csv (default: order)")
+  parser.add_argument("--flag-holes", default = True, action = argparse.BooleanOptionalAction, help = "whether to filter holes and smudges (default: --flag-holes)")
+  parser.add_argument("--taxa-cols", default = TAXA_COLS, help = f"taxonomic columns in taxa CSV to load (default: {TAXA_COLS})")
+  parser.add_argument("--taxa-csv", default = "taxa.csv", help = "CSV with taxonomic labels to use for CustomClassifier (default: taxa.csv)")
+  
+  return parser.parse_args()
+
+
+def load_taxon_keys(file_path, taxa_cols, taxon_rank = "order", flag_holes = True):
   '''
   Loads taxon keys from a tab-delimited CSV file into a list.
 
@@ -35,10 +43,10 @@ def load_taxon_keys(file_path, taxon_rank = "order", filter_holes = True):
   Returns:
     taxon_keys: List. A list of taxon keys to feed to the CustomClassifier for bioCLIP classification.
   '''
-  df = pl.read_csv(file_path, low_memory = False).select(TAXA_COLS).filter(pl.col(taxon_rank).is_not_null())
+  df = pl.read_csv(file_path, low_memory = False).select(taxa_cols).filter(pl.col(taxon_rank).is_not_null())
   taxon_keys = pl.Series(df.select(pl.col(taxon_rank)).unique()).to_list()
   
-  if filter_holes:
+  if flag_holes:
     taxon_keys.append("circle")
     taxon_keys.append("hole")
   
@@ -124,14 +132,16 @@ def create_json(predictions, json_path):
 
 
 if __name__ == "__main__":
-  taxon_keys_list = load_taxon_keys(TAXA_KEYS_CSV)
+  args = parse_args()
+  json_path = f"{args.data_path.split(sep = '/data')[0]}/samples.json"
+  taxon_keys_list = load_taxon_keys(file_path = args.taxa_csv, taxa_cols = args.taxa_cols, taxon_rank = args.rank, flag_holes = args.flag_holes)
   print(f"We are predicting from the following {len(taxon_keys_list)} taxon keys: {taxon_keys_list}")
 
   print("Loading CustomLabelsClassifier...")
   classifier = CustomLabelsClassifier(taxon_keys_list)
-  predictions = process_files_in_directory(DATA_PATH, classifier)
+  predictions = process_files_in_directory(args.data_path, classifier)
   
-  create_json(predictions, JSON_PATH)
+  create_json(predictions, json_path)
 
 
 '''
