@@ -10,46 +10,35 @@ Feed the folder to bioclip of images
 '''
 
 from bioclip import CustomLabelsClassifier
-import csv
+import polars as pl
 import os
 
 # MVP for testing uses these images, will require re-write to pass options
 INPUT_PATH = "test_images"
+TAXA_COLS = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 TAXA_KEYS_CSV = "taxa.csv"
 
 
-def load_taxon_keys(file_path, encoding='utf-8'):
+def load_taxon_keys(file_path, taxon_rank = "order", filter_holes = True):
   '''
   Loads taxon keys from a tab-delimited CSV file into a list.
 
   Args:
-    file_path: Path to the CSV file.
-    encoding: Encoding of the CSV file (default: 'utf-8').
+    file_path: String. Path to the taxa CSV file.
+    taxon_rank: String. Taxonomic rank to which to classify images (must be present as column in the taxa csv at file_path). Default: "order".
+    filter_holes: Boolean. Whether to filter holes and smudges (adds "hole" and "circle" to taxon_keys). Default: True.
 
   Returns:
-    A list of taxon keys.
+    taxon_keys: List. A list of taxon keys to feed to the CustomClassifier for bioCLIP classification.
   '''
-  taxon_keys = []
-  with open(file_path, 'r', encoding=encoding) as csvfile:
-    reader = csv.DictReader(csvfile, delimiter='\t')
-    for row in reader:
-      taxon_keys.append(row['order'])
+  df = pl.read_csv(file_path, low_memory = False).select(TAXA_COLS).filter(pl.col(taxon_rank).is_not_null())
+  taxon_keys = pl.Series(df.select(pl.col(taxon_rank)).unique()).to_list()
+  
+  if filter_holes:
+    taxon_keys.append("circle")
+    taxon_keys.append("hole")
+  
   return taxon_keys
-
-
-def remove_duplicates(taxon_keys):
-  '''
-  Removes duplicate entries from a list of taxon keys.
-
-  Args:
-    taxon_keys: A list of taxon keys.
-
-  Returns:
-    A list of unique taxon keys.
-  '''
-
-  unique_keys = list(set(taxon_keys))
-  return unique_keys
 
 
 def process_subdirectories(input_path, out_path):
@@ -112,16 +101,9 @@ def process_files_in_directory(subdirectory_path, classifier):
 
 if __name__ == "__main__":
   taxon_keys_list = load_taxon_keys(TAXA_KEYS_CSV)
-  print(len(taxon_keys_list))
-  taxon_keys_list=remove_duplicates(taxon_keys_list)
-  taxon_keys_list = [taxon for taxon in taxon_keys_list if taxon != '']
-  taxon_keys_list.append("circle")
-  taxon_keys_list.append("hole")
   print(f"We are predicting from the following {len(taxon_keys_list)} taxon keys: {taxon_keys_list}")
 
   classifier = CustomLabelsClassifier(taxon_keys_list)
-  #classifier = CustomLabelsClassifier(["insect","bear","stopsign","car", "hole", "circle", "lepidopteran", "beetle"])
-  #classifier = CustomLabelsClassifier(["insect","bear","stopsign","car","other", "hole", "circle", "lepidopteran", "beetle"])
   process_files_in_directory(INPUT_PATH, classifier)
 
 '''
