@@ -12,9 +12,13 @@ Feed the folder to bioclip of images
 from bioclip import CustomLabelsClassifier
 import polars as pl
 import os
+import sys
+import json
+#import uuid
 
 # MVP for testing uses these images, will require re-write to pass options
-INPUT_PATH = "test_images"
+DATA_PATH = "datasets/test_images/data"
+JSON_PATH = f"{DATA_PATH.split(sep = '/data')[0]}/samples.json"
 TAXA_COLS = ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
 TAXA_KEYS_CSV = "taxa.csv"
 
@@ -41,55 +45,40 @@ def load_taxon_keys(file_path, taxon_rank = "order", filter_holes = True):
   return taxon_keys
 
 
-def process_subdirectories(input_path, out_path):
-    '''
-    Processes subdirectories within the specified input path, excluding "output_path".
-
-    Args:
-    input_path: The path to the directory containing subdirectories.
-    out_path: Path to the subdirectory to exclude
-    '''
-
-    for subdir in os.listdir(input_path):
-        subdirectory_path = os.path.join(input_path, subdir)
-        if os.path.isdir(subdirectory_path) and subdirectory_path != out_path:
-
-            print(f"Processing subdirectory: {subdirectory_path}")
-            process_files_in_directory(subdirectory_path)
-
-
-def process_files_in_directory(subdirectory_path, classifier):
+def process_files_in_directory(input_path, classifier, taxon_rank = "order"):
     '''
     Processes files within a specified subdirectory.
 
     Args:
-    subdirectory_path: The path to the subdirectory containing files.
+    input_path: String. The path to the directory containing files.
+    classifier: CustomLabelsClassifier object from TAXA_KEYS_CSV.
+    taxon_rank: String. Taxonomic rank to which to classify images (must be present as column in the taxa csv at file_path). Default: "order".
     '''
 
     # Example: Print all file names in the subdirectory
-    for file in os.listdir(subdirectory_path):
-        file_path = os.path.join(subdirectory_path, file)
+    for file in os.listdir(input_path):
+        file_path = os.path.join(input_path, file)
         if os.path.isfile(file_path):
             print(f"File: {file_path}")
 
-    img_list = [f for f in os.listdir(subdirectory_path) if f.endswith(".jpg")]
+    img_list = [f for f in os.listdir(input_path) if f.endswith(".jpg")]
     
     if not img_list:
         # No imgs were found in base level
-        print("No .jpg images found in the input path: "+subdirectory_path)
+        sys.exit("No .jpg images found in the input path: " + input_path)
     else:
+        predictions = {}
         # Analyze the files
-        print(f"Found {len(img_list)} .jpg images.")
+        print(f"Found {len(img_list)} .jpg images. \n Getting predictions...")
         i=1
         for file in img_list:
             filename = os.path.splitext(file)[0]
             #print(filename)
-            data = os.path.join(subdirectory_path, file)
-            print("\n img # "+str(i)+"  out of "+str(len(img_list)))
+            data = os.path.join(input_path, file)
+            print(f"\n img # {str(i)} out of {str(len(img_list))}")
             i=i+1
+            
             # Run inference
-            print("Predict a new image")
-
             results = classifier.predict(data)
             sorted_results = sorted(results, key=lambda x: x["score"], reverse=True)
             # Get the highest scoring result
@@ -97,14 +86,53 @@ def process_files_in_directory(subdirectory_path, classifier):
 
             # Print the winner
             print(filename+f"  This is the winner: {winner['classification']} with a score of {winner['score']}")
+            key = f"data/{file}"
+            predictions[key] = taxon_rank + "_" + winner['classification']
+    return predictions
+
+
+def create_json(predictions, json_path):
+  """
+  Creates a JSON file with the specified structure, containing image filepaths and tags.
+
+  Args:
+    predictions: Dictionary with image filepaths as keys and prediction at given rank as values.
+    json_path: String. Path to image directory (they must be in a 'data' folder at the lowest level for V51);
+        JSON for V51 must be saved in directory containing the data directory.
+
+  Returns:
+    None
+  """
+  samples = []
+  #dataset_id = str(uuid.uuid4()) #test and see if it accepts a UUID later! 
+  i=0
+  for filepath in predictions.keys():
+    # revist structure of JSON for V51
+    i=i+1
+    sample = {
+      "_id": i,
+      "filepath": filepath,
+      "tags": [predictions[filepath]],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    }
+    samples.append(sample)
+
+  data = {"samples": samples}
+  with open(json_path, "w") as f:
+    json.dump(data, f, indent=2)
 
 
 if __name__ == "__main__":
   taxon_keys_list = load_taxon_keys(TAXA_KEYS_CSV)
   print(f"We are predicting from the following {len(taxon_keys_list)} taxon keys: {taxon_keys_list}")
 
+  print("Loading CustomLabelsClassifier...")
   classifier = CustomLabelsClassifier(taxon_keys_list)
-  process_files_in_directory(INPUT_PATH, classifier)
+  predictions = process_files_in_directory(DATA_PATH, classifier)
+  
+  create_json(predictions, JSON_PATH)
+
 
 '''
 classifier = CustomLabelsClassifier(["insect", "hole"])

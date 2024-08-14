@@ -1,0 +1,184 @@
+{
+  "samples": [
+    {
+      "_id": 1,
+      "filepath": "data/beetles_4.jpg",
+      "tags": [
+        "order_Coleoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 2,
+      "filepath": "data/cicada.jpg",
+      "tags": [
+        "order_Hemiptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 3,
+      "filepath": "data/cricket.jpg",
+      "tags": [
+        "order_Orthoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 4,
+      "filepath": "data/blur.jpg",
+      "tags": [
+        "order_Diptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 5,
+      "filepath": "data/holez.jpg",
+      "tags": [
+        "order_circle"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 6,
+      "filepath": "data/hole.jpg",
+      "tags": [
+        "order_circle"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 7,
+      "filepath": "data/ant.jpg",
+      "tags": [
+        "order_Hymenoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 8,
+      "filepath": "data/moth.jpg",
+      "tags": [
+        "order_Lepidoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 9,
+      "filepath": "data/bee.jpg",
+      "tags": [
+        "order_Hymenoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 10,
+      "filepath": "data/moths3.jpg",
+      "tags": [
+        "order_Lepidoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 11,
+      "filepath": "data/mothwide.jpg",
+      "tags": [
+        "order_Lepidoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 12,
+      "filepath": "data/hole2.jpg",
+      "tags": [
+        "order_hole"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 13,
+      "filepath": "data/moths2.jpg",
+      "tags": [
+        "order_Plecoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 14,
+      "filepath": "data/moths4.jpg",
+      "tags": [
+        "order_Lepidoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 15,
+      "filepath": "data/beetles3.jpg",
+      "tags": [
+        "order_Coleoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 16,
+      "filepath": "data/beetles2.jpg",
+      "tags": [
+        "order_Coleoptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 17,
+      "filepath": "data/holes4.jpg",
+      "tags": [
+        "order_circle"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 18,
+      "filepath": "data/beetle.jpg",
+      "tags": [
+        "order_Blattodea"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 19,
+      "filepath": "data/holes3.jpg",
+      "tags": [
+        "order_hole"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    },
+    {
+      "_id": 20,
+      "filepath": "data/holes1.jpg",
+      "tags": [
+        "order_Diptera"
+      ],
+      "_media_type": "image",
+      "_dataset_id": "2"
+    }
+  ]
+}
