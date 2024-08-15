@@ -144,7 +144,7 @@ def get_labels(data_path, taxon_rank = "order", flag_holes = True, taxa_path = "
     taxa_cols: List of strings. Taxonomic columns in taxa CSV to load (default: ["kingdom", "phylum", "class", "order", "family", "genus", "species"]).
   '''
   json_path = f"{data_path.split(sep = '/data')[0]}/samples.json"
-  taxon_keys_list = load_taxon_keys(taxa_path = taxa_path, taxa_cols = taxa_cols, taxon_rank = taxon_rank, flag_holes = flag_holes)
+  taxon_keys_list = load_taxon_keys(taxa_path = taxa_path, taxa_cols = taxa_cols, taxon_rank = taxon_rank.lower(), flag_holes = flag_holes)
   print(f"We are predicting from the following {len(taxon_keys_list)} taxon keys: {taxon_keys_list}")
 
   print("Loading CustomLabelsClassifier...")
