@@ -93,11 +93,15 @@ def process_files_in_directory(data_path, classifier, taxon_rank = "order"):
             sorted_results = sorted(results, key=lambda x: x["score"], reverse=True)
             # Get the highest scoring result
             winner = sorted_results[0]
+            pred = winner['classification']
 
             # Print the winner
-            print(filename+f"  This is the winner: {winner['classification']} with a score of {winner['score']}")
+            print(filename+f"  This is the winner: {pred} with a score of {winner['score']}")
             key = f"data/{file}"
-            predictions[key] = taxon_rank + "_" + winner['classification']
+            if pred in ["hole", "circle"]:
+              predictions[key] = f"abiotic_{pred}"
+            else:
+              predictions[key] = taxon_rank + "_" + pred
     return predictions
 
 
