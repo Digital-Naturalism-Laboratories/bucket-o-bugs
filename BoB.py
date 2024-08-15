@@ -27,6 +27,7 @@ def parse_args():
   parser.add_argument("--flag-holes", default = True, action = argparse.BooleanOptionalAction, help = "whether to flag holes and smudges (default: --flag-holes)")
   parser.add_argument("--taxa-csv", default = "taxa.csv", help = "CSV with taxonomic labels to use for CustomClassifier (default: taxa.csv)")
   parser.add_argument("--taxa-cols", default = TAXA_COLS, help = f"taxonomic columns in taxa CSV to load (default: {TAXA_COLS})")
+  parser.add_argument("--device", required = False, choices = ["cpu", "cuda"], help = "device on which to run pybioblip ('cpu' or 'cuda', default: 'cpu')")
   
   return parser.parse_args()
 
@@ -132,7 +133,7 @@ def create_json(predictions, json_path):
     json.dump(data, f, indent=2)
 
 
-def get_labels(data_path, taxon_rank = "order", flag_holes = True, taxa_path = "taxa.csv", taxa_cols = TAXA_COLS):
+def get_labels(data_path, taxon_rank = "order", flag_holes = True, taxa_path = "taxa.csv", taxa_cols = TAXA_COLS, device = "cpu"):
   '''
   Generates the list of taxa to predict, loads the CustomLabelsClassifier with that list, then gets the predictions and generates a JSON for V51 interface.
   
@@ -142,13 +143,14 @@ def get_labels(data_path, taxon_rank = "order", flag_holes = True, taxa_path = "
     flag_holes: Boolean. Whether to flag holes and smudges (adds "hole" and "circle" to taxon_keys). Default: True.
     taxa_path: String. Path to the taxa CSV file.
     taxa_cols: List of strings. Taxonomic columns in taxa CSV to load (default: ["kingdom", "phylum", "class", "order", "family", "genus", "species"]).
+    device: String. Device on which to run pybioclip ('cpu' or 'cuda'). Default: 'cpu'.
   '''
   json_path = f"{data_path.split(sep = '/data')[0]}/samples.json"
   taxon_keys_list = load_taxon_keys(taxa_path = taxa_path, taxa_cols = taxa_cols, taxon_rank = taxon_rank.lower(), flag_holes = flag_holes)
   print(f"We are predicting from the following {len(taxon_keys_list)} taxon keys: {taxon_keys_list}")
 
   print("Loading CustomLabelsClassifier...")
-  classifier = CustomLabelsClassifier(taxon_keys_list)
+  classifier = CustomLabelsClassifier(taxon_keys_list, device = device)
   predictions = process_files_in_directory(data_path, classifier)
   
   create_json(predictions, json_path)
@@ -160,7 +162,8 @@ if __name__ == "__main__":
              taxon_rank = args.rank,
              flag_holes = args.flag_holes,
              taxa_path = args.taxa_csv,
-             taxa_cols = args.taxa_cols)
+             taxa_cols = args.taxa_cols,
+             device = args.device)
 
 '''
 classifier = CustomLabelsClassifier(["insect", "hole"])
