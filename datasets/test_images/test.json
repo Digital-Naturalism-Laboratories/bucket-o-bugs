@@ -1,0 +1,15 @@
+{"samples": 
+[{"_id": {"$oid": "66bcfd3de94b8e7f77d8b1c6"}, 
+"filepath": "data\\liquidSerau_2024_08_06__19_15_05_HDR0_crop_6.jpg", 
+"tags": ["order_Orthoptera", "family_gryllidae"], 
+"_media_type": "image", 
+"_rand": 0.9991719170376834, 
+"_dataset_id": {"$oid": "66bcfd1fe94b8e7f77d8b1bc"}},
+
+{"_id": {"$oid": "66bcfd3de94b8e7f77d8b1c7"}, 
+"filepath": "data\\liquidSerau_2024_08_06__19_17_05_HDR0_crop_5.jpg", 
+"tags": ["order_Orthoptera", "family_gryllidae"], 
+"_media_type": "image", "_rand": 0.9995640184600508, "_dataset_id": {"$oid": "66bcfd1fe94b8e7f77d8b1bc"}},
+{"_id": {"$oid": "66bcfd3de94b8e7f77d8b1c8"}, "filepath": "data\\liquidSerau_2024_08_06__19_19_05_HDR0_crop_3.jpg", "tags": ["order_Orthoptera", "family_gryllidae"], "_media_type": "image", "_rand": 0.9998202003574216, "_dataset_id": {"$oid": "66bcfd1fe94b8e7f77d8b1bc"}},
+{"_id": {"$oid": "66bcfd3de94b8e7f77d8b1c8"}, "filepath": "data\\liquidSerau_2024_08_06__19_19_05_HDR0_crop_4.jpg", "tags": ["abiotic_Orthoptera"], "_media_type": "image", "_rand": 0.9998202003574216, "_dataset_id": {"$oid": "66bcfd1fe94b8e7f77d8b1bc"}}
+]}
