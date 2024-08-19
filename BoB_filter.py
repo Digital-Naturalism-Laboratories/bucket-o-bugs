@@ -24,12 +24,17 @@ def get_json_tags(v51_json):
   for i in range(len(v51_json["samples"])):
     img_info = v51_json["samples"][i]
     taxa_by_image["filepath"] = img_info["filepath"]
+    included_tags = ["filepath"]
     for tag in img_info["tags"]:
       tag_parts = tag.split("_")
       if tag_parts[0] not in EXPECTED_COLS:
         print(f"The preface {tag_parts[0]} associated with image {taxa_by_image['filepath']} is not an column ({EXPECTED_COLS}), please note it will not be included")
         continue
       taxa_by_image[tag_parts[0]] = tag_parts[1]
+      included_tags.append(tag_parts[0])
+    null_tags = [col for col in EXPECTED_COLS if col not in included_tags]
+    for i in range(len(null_tags)):
+      taxa_by_image[null_tags[i]] = None
     df = pl.concat([df, pl.DataFrame(data = taxa_by_image)], how = "diagonal_relaxed")
 
   return df
